@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIM — Security Incident Mapping</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16232E;
+    --bg:#EDF1F5;
+    --surface:#FFFFFF;
+    --line:#D7DEE6;
+    --muted:#5B6B7B;
+    --amber:#E2A73C;
+    --red:#C4453A;
+    --green:#3C8562;
+    --blue:#3A6EA5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    background:var(--ink);
+    color:#fff;
+    padding:22px 24px 18px;
+  }
+  .wordmark{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:34px;
+    letter-spacing:1px;
+    line-height:1;
+  }
+  .wordmark span{color:var(--amber);}
+  .tagline{
+    font-size:13px;
+    color:#A9B7C4;
+    margin-top:4px;
+    letter-spacing:.3px;
+  }
+  nav{
+    display:flex;
+    gap:2px;
+    margin-top:18px;
+    border-top:1px solid #2B3B48;
+    padding-top:14px;
+  }
+  nav button{
+    background:none;
+    border:none;
+    color:#A9B7C4;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.4px;
+    text-transform:uppercase;
+    padding:8px 14px;
+    cursor:pointer;
+    border-radius:4px;
+  }
+  nav button.active{
+    background:var(--amber);
+    color:var(--ink);
+  }
+  main{
+    max-width:760px;
+    margin:0 auto;
+    padding:26px 20px 80px;
+  }
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:22px;
+    margin-bottom:18px;
+  }
+  h2.section-title{
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:22px;
+    font-weight:700;
+    margin:0 0 4px;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+  }
+  .section-sub{
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    color:var(--muted);
+    margin:14px 0 6px;
+  }
+  label:first-of-type{margin-top:0;}
+  select, input[type=text], input[type=datetime-local], textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+    background:#FBFCFD;
+    color:var(--ink);
+  }
+  textarea{resize:vertical; min-height:80px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .check-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:16px;
+    font-size:13px;
+    color:var(--ink);
+  }
+  .check-row input{width:16px; height:16px;}
+  button.primary{
+    margin-top:20px;
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    font-weight:600;
+    font-size:14px;
+    border-radius:4px;
+    cursor:pointer;
+    letter-spacing:.3px;
+  }
+  button.primary:hover{background:#233544;}
+  .confirm{
+    display:none;
+    margin-top:14px;
+    padding:10px 14px;
+    background:#EAF4EE;
+    border:1px solid var(--green);
+    color:var(--green);
+    font-size:13px;
+    border-radius:4px;
+    font-weight:500;
+  }
+
+  /* Stat strip */
+  .stats{
+    display:flex;
+    gap:12px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .stat{
+    flex:1;
+    min-width:110px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:4px solid var(--blue);
+    border-radius:4px;
+    padding:12px 14px;
+  }
+  .stat .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:22px;
+    font-weight:500;
+  }
+  .stat .lbl{
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.4px;
+  }
+
+  /* Filters */
+  .filters{
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .filters select{width:auto; min-width:140px;}
+
+  /* Ticket / log entries */
+  .ticket{
+    display:flex;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+  .stripe{width:6px; flex-shrink:0;}
+  .ticket-body{padding:12px 16px; flex:1;}
+  .ticket-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .ticket-id{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+  }
+  .ticket-type{
+    font-weight:600;
+    font-size:14px;
+  }
+  .badge{
+    font-size:10px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.3px;
+    padding:3px 8px;
+    border-radius:20px;
+  }
+  .badge.pending{background:#FCEFD9; color:#966617;}
+  .badge.verified{background:#DDEAF6; color:var(--blue);}
+  .badge.resolved{background:#DFF0E6; color:var(--green);}
+  .ticket-meta{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+  .ticket-desc{
+    font-size:13px;
+    margin-top:8px;
+    color:#33414D;
+  }
+  .ticket-reporter{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:8px;
+    font-style:italic;
+  }
+  .admin-controls{
+    margin-top:10px;
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .admin-controls select{
+    width:auto;
+    padding:6px 10px;
+    font-size:12px;
+  }
+  .empty{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--muted);
+    font-size:13px;
+  }
+  .role-note{
+    font-size:12px;
+    color:var(--muted);
+    background:#F2F5F8;
+    border:1px dashed var(--line);
+    padding:10px 12px;
+    border-radius:4px;
+    margin-bottom:18px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">SIM<span>.</span></div>
+  <div class="tagline">Security Incident Mapping — see something, report it.</div>
+  <nav>
+    <button class="active" data-tab="report">Report</button>
+    <button data-tab="log">Incident Log</button>
+    <button data-tab="admin">Admin</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- REPORT TAB -->
+  <section id="tab-report">
+    <div class="card">
+      <h2 class="section-title">File a report</h2>
+      <div class="section-sub">Takes under 2 minutes. All fields except your name are required.</div>
+
+      <label>Incident type</label>
+      <select id="f-type">
+        <option>Theft / Stealing</option>
+        <option>Assault</option>
+        <option>Stalking / Harassment</option>
+        <option>Vandalism</option>
+        <option>Sexual Assault</option>
+        <option>Other</option>
+      </select>
+
+      <div class="row2">
+        <div>
+          <label>Location</label>
+          <input type="text" id="f-location" placeholder="e.g. Hostel B, Block 2">
+        </div>
+        <div>
+          <label>Date / time</label>
+          <input type="datetime-local" id="f-time">
+        </div>
+      </div>
+
+      <label>Description</label>
+      <textarea id="f-desc" placeholder="What happened? Include any details that could help security respond."></textarea>
+
+      <label>Your name (optional if reporting anonymously)</label>
+      <input type="text" id="f-name" placeholder="Full name">
+
+      <div class="check-row">
+        <input type="checkbox" id="f-anon">
+        <label style="margin:0; text-transform:none; font-weight:400; color:var(--ink); letter-spacing:0;" for="f-anon">Report anonymously — your name will not be stored or shown</label>
+      </div>
+
+      <button class="primary" onclick="submitReport()">Submit report</button>
+      <div class="confirm" id="confirm-msg">Report received. Reference ID: <span id="confirm-id"></span></div>
+    </div>
+  </section>
+
+  <!-- LOG TAB -->
+  <section id="tab-log" style="display:none;">
+    <div class="card" style="padding:16px 16px 4px;">
+      <div class="filters">
+        <select id="filter-type" onchange="renderLog()">
+          <option value="">All types</option>
+          <option>Theft / Stealing</option>
+          <option>Assault</option>
+          <option>Stalking / Harassment</option>
+          <option>Vandalism</option>
+          <option>Sexual Assault</option>
+          <option>Other</option>
+        </select>
+        <select id="filter-status" onchange="renderLog()">
+          <option value="">All statuses</option>
+          <option>Pending</option>
+          <option>Verified</option>
+          <option>Resolved</option>
+        </select>
+      </div>
+    </div>
+    <div id="log-list"></div>
+  </section>
+
+  <!-- ADMIN TAB -->
+  <section id="tab-admin" style="display:none;">
+    <div class="role-note">Admin / Security Officer view — reporter identity is visible here (except anonymous reports), and report status can be updated.</div>
+    <div class="stats" id="admin-stats"></div>
+    <div id="admin-list"></div>
+  </section>
+
+</main>
+
+<script>
+  // In-memory store (no persistence by design — this is a prototype/demo)
+  let reports = [
+    {
+      id: "SIM-0001",
+      type: "Theft / Stealing",
+      location: "Hostel A, Block 3",
+      time: "2026-06-28T21:40",
+      desc: "Laptop taken from a shared reading room while unattended for about 10 minutes.",
+      name: "Chidinma O.",
+      anon: false,
+      status: "Verified"
+    },
+    {
+      id: "SIM-0002",
+      type: "Stalking / Harassment",
+      location: "Off-campus lodge, behind Faculty of Science",
+      time: "2026-06-30T19:05",
+      desc: "Same individual has followed reporter home from campus on three separate evenings this week.",
+      name: "",
+      anon: true,
+      status: "Pending"
+    },
+    {
+      id: "SIM-0003",
+      type: "Vandalism",
+      location: "Car park, Admin block",
+      time: "2026-07-01T02:10",
+      desc: "Two parked motorcycles found with slashed seats overnight.",
+      name: "Landlord — Mr. Bello",
+      anon: false,
+      status: "Resolved"
+    }
+  ];
+  let counter = reports.length;
+
+  const stripeColor = t => ({
+    "Theft / Stealing": "#3A6EA5",
+    "Assault": "#C4453A",
+    "Stalking / Harassment": "#C4453A",
+    "Sexual Assault": "#C4453A",
+    "Vandalism": "#E2A73C",
+    "Other": "#5B6B7B"
+  }[t] || "#5B6B7B");
+
+  function fmtTime(t){
+    if(!t) return "—";
+    const d = new Date(t);
+    return d.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function submitReport(){
+    const type = document.getElementById('f-type').value;
+    const location = document.getElementById('f-location').value.trim();
+    const time = document.getElementById('f-time').value;
+    const desc = document.getElementById('f-desc').value.trim();
+    const anon = document.getElementById('f-anon').checked;
+    const name = anon ? "" : document.getElementById('f-name').value.trim();
+
+    if(!location || !time || !desc){
+      alert("Please fill in location, date/time, and description.");
+      return;
+    }
+
+    counter++;
+    const id = "SIM-" + String(counter).padStart(4, "0");
+    reports.unshift({ id, type, location, time, desc, name, anon, status: "Pending" });
+
+    document.getElementById('confirm-id').textContent = id;
+    document.getElementById('confirm-msg').style.display = "block";
+    document.getElementById('f-location').value = "";
+    document.getElementById('f-desc').value = "";
+    document.getElementById('f-name').value = "";
+    document.getElementById('f-anon').checked = false;
+    document.getElementById('f-time').value = "";
+
+    renderLog();
+    renderAdmin();
+  }
+
+  function ticketHTML(r, isAdmin){
+    const badgeClass = r.status.toLowerCase();
+    const reporterLine = isAdmin
+      ? (r.anon ? "Reporter: anonymous" : "Reporter: " + (r.name || "—"))
+      : (r.anon ? "" : "Reported by " + (r.name || "a community member"));
+
+    const adminControls = isAdmin ? `
+      <div class="admin-controls">
+        <label style="margin:0; text-transform:none; font-weight:500; color:var(--muted);">Status:</label>
+        <select onchange="updateStatus('${r.id}', this.value)">
+          <option ${r.status==='Pending'?'selected':''}>Pending</option>
+          <option ${r.status==='Verified'?'selected':''}>Verified</option>
+          <option ${r.status==='Resolved'?'selected':''}>Resolved</option>
+        </select>
+      </div>` : "";
+
+    return `
+      <div class="ticket">
+        <div class="stripe" style="background:${stripeColor(r.type)}"></div>
+        <div class="ticket-body">
+          <div class="ticket-top">
+            <span class="ticket-type">${r.type}</span>
+            <span class="badge ${badgeClass}">${r.status}</span>
+          </div>
+          <div class="ticket-id">${r.id}</div>
+          <div class="ticket-meta">${r.location} &middot; ${fmtTime(r.time)}</div>
+          <div class="ticket-desc">${r.desc}</div>
+          ${reporterLine ? `<div class="ticket-reporter">${reporterLine}</div>` : ""}
+          ${adminControls}
+        </div>
+      </div>`;
+  }
+
+  function renderLog(){
+    const typeF = document.getElementById('filter-type').value;
+    const statusF = document.getElementById('filter-status').value;
+    let list = reports.filter(r => (!typeF || r.type===typeF) && (!statusF || r.status===statusF));
+    const el = document.getElementById('log-list');
+    el.innerHTML = list.length
+      ? list.map(r => ticketHTML(r, false)).join("")
+      : `<div class="empty">No incidents match this filter.</div>`;
+  }
+
+  function renderAdmin(){
+    const counts = {};
+    reports.forEach(r => counts[r.type] = (counts[r.type]||0) + 1);
+    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+
+    const statsEl = document.getElementById('admin-stats');
+    statsEl.innerHTML = `
+      <div class="stat"><div class="num">${reports.length}</div><div class="lbl">Total reports</div></div>
+      <div class="stat"><div class="num">${reports.filter(r=>r.status==='Pending').length}</div><div class="lbl">Pending review</div></div>
+      <div class="stat"><div class="num">${top[0] ? top[0][0].split(' ')[0] : '—'}</div><div class="lbl">Top category</div></div>
+    `;
+
+    document.getElementById('admin-list').innerHTML = reports.map(r => ticketHTML(r, true)).join("");
+  }
+
+  function updateStatus(id, status){
+    const r = reports.find(x => x.id === id);
+    if(r){ r.status = status; renderLog(); renderAdmin(); }
+  }
+
+  // Tabs
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      ['report','log','admin'].forEach(t => {
+        document.getElementById('tab-'+t).style.display = (t===btn.dataset.tab) ? 'block' : 'none';
+      });
+    });
+  });
+
+  renderLog();
+  renderAdmin();
+</script>
+</body>
+</html>
